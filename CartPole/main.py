@@ -25,7 +25,7 @@ for episode in range(200000):
             action = policy[state].index(max(policy[state]))
             epsilon = random.uniform(0, 1)
 
-            if epsilon > 0.99 or policy[state][action] < 20:
+            if epsilon > epv:#or policy[state][action] < 20:
                 action = env.action_space.sample()
         else:
             action = env.action_space.sample()
