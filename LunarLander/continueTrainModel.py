@@ -27,7 +27,7 @@ save = input("Please enter name to save: ")
 
 model = keras.models.load_model(name)
 
-agent = DQN(model=model)
+agent = DQN(model=model, epsilon=0.20, gamma=0.99, batch_size=128, epsilon_min=0.01, lr=0.001, epsilon_decay=0.95, epochs=5)
 
 env = gym.make("LunarLander-v2")
 
@@ -46,8 +46,14 @@ for ii in range(1000):
     next_state = np.reshape(next_state, [1, 8])
 
     if done:
-        # The simulation fails so no next state
-        next_state = np.zeros(state.shape)
+        if 0.2 > np.random.rand():
+            # Make a random action
+            action = env.action_space.sample()
+        else:
+            # Get action from Q-network
+            Qs = agent.model(state, training=False)[0]
+            action = np.argmax(Qs)
+
         # Add experience to memory
         agent.memory.append((state, action, reward, next_state))
 
@@ -66,7 +72,7 @@ state = np.reshape(state, [1, 8])
 
 # Train with Exploration decline to 1% 300 games
 print("Exploring 100 games with declaining epsilon")
-for ep in range(10000):
+for ep in range(1000):
     if ep % 10 == 0:
         agent.update_epsilon()
     tot_reward = 0
@@ -103,11 +109,9 @@ for ep in range(10000):
             agent.memory.append((state, action, reward, next_state))
             state = next_state
 
-    if ep % 100 == 0:
-        agent.train_on_minibatch(50)
-
-        print("Saving progress...")
-        # agent.model.save(save)
+    if (ep+1) % 10 == 0:
+        print("Training the model")
+        agent.train_on_minibatch(5)
 
 env.close()
 

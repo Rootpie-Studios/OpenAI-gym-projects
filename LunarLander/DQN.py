@@ -8,16 +8,17 @@ class DQN:
 
     """ Implementation of deep q learning algorithm """
 
-    def __init__(self, action_space=4, state_space=8, model=False):
+    def __init__(self, action_space=4, state_space=8, model=False, epsilon=0.9, gamma=0.99, batch_size=16, epsilon_min=0.01, lr=0.001, epsilon_decay=0.997, epochs=1):
 
         self.action_space = action_space
         self.state_space = state_space
-        self.epsilon = 0.9
-        self.gamma = .90
-        self.batch_size = 512
-        self.epsilon_min = .01
-        self.lr = 0.001
-        self.epsilon_decay = .99
+        self.epsilon = epsilon
+        self.gamma = gamma
+        self.batch_size = batch_size
+        self.epsilon_min = epsilon_min
+        self.lr = lr
+        self.epsilon_decay = epsilon_decay
+        self.epochs = epochs
         self.memory = deque(maxlen=1000000)
         if model:
             print("Applying previous model")
@@ -29,7 +30,8 @@ class DQN:
 
         model = Sequential()
         model.add(Dense(150, input_dim=self.state_space, activation="relu"))
-        model.add(Dense(120, activation="relu"))
+        model.add(Dense(150, activation="relu"))
+        model.add(Dense(150, activation="relu"))
         model.add(Dense(self.action_space, activation="linear"))
         model.compile(loss='mse', optimizer=Adam(lr=self.lr))
         return model
@@ -59,4 +61,4 @@ class DQN:
                 targets[i] = self.model(state_b, training=False)
                 targets[i][action_b] = target
 
-            self.model.fit(inputs, targets, epochs=1, verbose=0)
+            self.model.fit(inputs, targets, epochs=self.epochs, verbose=0)
